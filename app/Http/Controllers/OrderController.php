@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use Illuminate\Http\Request;
+use App\Jobs\PublishOrderToRabbitMQ;
 
 class OrderController extends Controller
 {
@@ -40,6 +41,13 @@ class OrderController extends Controller
                     'order_id' => $order->id,
                     'order_quantity' => $order->qtyAddedToCart
                 ]);
+
+            // Dispatch job with raw data
+            PublishOrderToRabbitMQ::dispatch([
+                'quantity' => $item['qtyAddedToCart'],
+                'product_id' => $item['id']
+            ]);
+
             }
 
             return response()->json([
